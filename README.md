@@ -1,140 +1,219 @@
-# PropDocs - Property Asset Management System
+# PropDocs API - Property Asset Management Backend
 
-> Transform reactive home maintenance into proactive, data-driven property care
+> Backend API powering the PropDocs property asset management platform
 
-PropDocs is a mobile-first property asset management system that helps homeowners track, maintain, and manage all household assets including HVAC systems, boilers, water heaters, appliances, and critical home infrastructure. Leveraging AI capabilities for intelligent asset identification and maintenance scheduling, PropDocs maximizes asset lifespan while minimizing maintenance costs.
+This repository contains the backend API for PropDocs, a property asset management system that helps homeowners track, maintain, and manage household assets. The API provides core functionality for asset management, AI-powered maintenance scheduling, user authentication, and property showcase features.
 
-## 🏠 Key Features
+## 🚀 API Capabilities
 
-### Asset Management
-- **AI-Powered Asset Registration**: Add assets via photo capture with automatic identification
-- **Comprehensive Asset Profiles**: Track specifications, warranties, installation dates, and condition
-- **Visual Documentation**: Multiple photos per asset for complete record-keeping
-- **Smart Categorization**: Pre-defined categories for HVAC, Plumbing, Electrical, Appliances, and more
-
-### Intelligent Maintenance
-- **AI-Generated Schedules**: Automatic maintenance schedules based on manufacturer recommendations
-- **Smart Notifications**: Configurable reminders (1 week, 3 days, day-of)
-- **Task Management**: Complete tasks, add service notes, track costs
-- **Service Provider Directory**: Manage preferred contractors and service history
-
-### Property Showcase & Real Estate Integration
-- **Professional Property Reports**: Generate comprehensive asset and maintenance documentation
-- **Shareable Property Links**: Secure, time-limited access for real estate agents and buyers
-- **Public Property Dashboard**: Showcase asset inventory, maintenance history, and property care metrics
-- **Real Estate Tools**: QR codes, PDF reports, and MLS integration capabilities
-
-### Analytics & Insights
-- **House Health Score**: Overall property health based on individual asset scores
-- **Cost Analytics**: Track maintenance spending and budget performance
-- **Asset Health Monitoring**: Visual indicators of asset condition and compliance
-- **Export Capabilities**: Generate reports for home sales and property management
-
-## 🎬 Demo
-
-See PropDocs in action with our first-run demo:
-
-[Watch the demo on YouTube](https://youtube.com/shorts/kdp4HPriFBo?si=wTVib3-Ll85naLOv)
-
-*This demo showcases the initial user experience, including property setup, asset registration, and core app functionality.*
-
-## 🎯 Target Audience
-
-- **Homeowners** (ages 30-65) managing single-family homes or condominiums
-- **Property Investors** overseeing multiple rental properties
-- **Home Service Professionals** managing client assets
-- **Real Estate Agents** showcasing well-maintained properties
-
-## 📱 Platform
-
-- **Primary**: iOS 15.0+ (Swift/SwiftUI native)
-- **Backend**: Cloud-based API with NoSQL database
+### Core Services
+- **User Authentication**: JWT-based auth with multi-provider support (Apple, Google)
+- **Property Management**: Multi-property support with address validation
+- **Asset CRUD Operations**: Complete asset lifecycle management
+- **Photo Upload & Processing**: Image storage with compression and thumbnail generation
 - **AI Integration**: Computer vision for asset identification and maintenance recommendations
 
-## 💰 Subscription Tiers
+### Data Management
+- **RESTful API Design**: Clean, consistent endpoints following REST principles  
+- **Database Operations**: Optimized queries with proper indexing and caching
+- **File Storage**: Secure cloud storage for asset photos and documents
+- **Sync Management**: Offline-first support with conflict resolution
 
-### Free Tier
-- Up to 5 assets
-- Basic maintenance reminders
-- Limited photo storage (10 photos total)
+### Advanced Features
+- **Maintenance Scheduling**: AI-powered maintenance recommendations and scheduling
+- **Notification System**: Configurable alerts and reminders
+- **Report Generation**: Professional PDF reports and property showcases
+- **Analytics Engine**: Property health scores and maintenance insights
+- **Third-party Integrations**: Service provider APIs and real estate tools
 
-### Premium Tier - $9.99/month or $99.99/year
-- Unlimited assets
-- AI-powered asset identification
-- Advanced maintenance scheduling
-- Unlimited photo storage
-- Export capabilities
+## 🏗️ Technical Stack
 
-### Professional Tier - $19.99/month or $199.99/year
-- Multi-property management
-- Service provider integration
-- Advanced analytics and reporting
-- API access for property managers
+### Backend Framework
+- **Runtime**: Node.js with TypeScript
+- **Framework**: Express.js or Fastify
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT with Passport.js
+- **File Storage**: AWS S3 or Google Cloud Storage
 
-## 🚀 Development Roadmap
+### API Architecture
+- **Design Pattern**: RESTful API with OpenAPI/Swagger documentation
+- **Data Validation**: Joi or Zod schemas
+- **Error Handling**: Centralized error middleware
+- **Logging**: Winston or Pino structured logging
+- **Testing**: Jest with Supertest for integration testing
 
-### Phase 1: Foundation
-- Core infrastructure and user authentication
-- Basic asset management and photo storage
-- Manual maintenance scheduling
+### Infrastructure
+- **Deployment**: Docker containers on AWS/GCP
+- **Monitoring**: Application performance monitoring and health checks
+- **Caching**: Redis for session management and data caching
+- **Queue Processing**: Bull/BullMQ for background jobs
+- **Security**: Rate limiting, CORS, input sanitization
 
-### Phase 2: Intelligence & Automation
-- AI integration for asset identification
-- Automated maintenance recommendations
-- Real estate integration and property showcase
+## 📋 API Endpoints
 
-### Phase 3: Polish & Launch
-- UI/UX optimization and offline capabilities
-- App Store launch and marketing materials
-- Customer support system implementation
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User authentication
+- `POST /api/auth/refresh` - Token refresh
+- `DELETE /api/auth/logout` - User logout
 
-## 🏗 Technical Architecture
+### Properties
+- `GET /api/properties` - List user properties
+- `POST /api/properties` - Create new property
+- `GET /api/properties/:id` - Get property details
+- `PUT /api/properties/:id` - Update property
+- `DELETE /api/properties/:id` - Delete property
+
+### Assets
+- `GET /api/properties/:propertyId/assets` - List property assets
+- `POST /api/properties/:propertyId/assets` - Create asset
+- `GET /api/assets/:id` - Get asset details
+- `PUT /api/assets/:id` - Update asset
+- `DELETE /api/assets/:id` - Delete asset
+
+### Maintenance
+- `GET /api/assets/:assetId/maintenance` - Get maintenance schedules
+- `POST /api/assets/:assetId/maintenance` - Create maintenance task
+- `PUT /api/maintenance/:id/complete` - Mark task complete
+
+### File Upload
+- `POST /api/upload/photos` - Upload asset photos
+- `GET /api/files/:id` - Retrieve file
+- `DELETE /api/files/:id` - Delete file
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- MongoDB 5.0+
+- Redis (optional, for caching)
+- AWS/GCP account (for file storage)
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/your-org/propdocs-api.git
+cd propdocs-api
+
+# Install dependencies  
+npm install
+
+# Set up environment variables
+cp .env.example .env
+
+# Start development server
+npm run dev
+```
+
+### Environment Variables
+```env
+NODE_ENV=development
+PORT=3000
+DATABASE_URL=mongodb://localhost:27017/propdocs
+JWT_SECRET=your-jwt-secret
+AWS_ACCESS_KEY_ID=your-aws-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret
+AWS_S3_BUCKET=your-s3-bucket
+```
+
+## 🏗️ Architecture Overview
 
 ```
-iOS Application (SwiftUI)
-├── Business Logic Layer
-│   ├── Asset Management
-│   ├── AI Integration
-│   ├── Scheduling Logic
-│   └── Notification Engine
-├── Network Layer
-│   ├── API Client
-│   ├── Authentication
-│   └── Sync Manager
-└── Data Layer (Core Data)
-
-Cloud Backend
-├── API Gateway
-├── Authentication Service
-├── AI Services (Computer Vision)
+API Gateway (Express/Fastify)
+├── Authentication Middleware
+├── Route Handlers
+│   ├── Auth Routes
+│   ├── Property Routes  
+│   ├── Asset Routes
+│   ├── Maintenance Routes
+│   └── File Upload Routes
 ├── Business Logic Services
-└── Database Layer
+│   ├── User Service
+│   ├── Property Service
+│   ├── Asset Service
+│   ├── Maintenance Service
+│   └── AI Integration Service
+├── Data Access Layer
+│   ├── MongoDB Models
+│   ├── Repository Pattern
+│   └── Query Optimization
+└── External Integrations
+    ├── File Storage (S3/GCS)
+    ├── AI/ML Services
+    └── Notification Services
 ```
 
-## 🔒 Security & Privacy
+## 🔒 Security Features
 
-- End-to-end encryption for sensitive data
-- Secure authentication with biometric support
-- GDPR and CCPA compliant data handling
-- Automated cloud backup with user control
-- Privacy controls for property showcase features
+### Authentication & Authorization
+- JWT-based authentication with refresh tokens
+- Role-based access control (RBAC)
+- Multi-factor authentication support
+- OAuth integration (Google, Apple)
 
-## 🎯 Success Metrics
+### Data Protection
+- Input validation and sanitization
+- SQL injection prevention
+- Rate limiting and DDoS protection
+- Encrypted data at rest and in transit
+- GDPR and CCPA compliance
 
-- **User Acquisition**: 10,000+ active users within 12 months
-- **Engagement**: 80% monthly active user retention rate
-- **Value Creation**: 25% reduction in emergency maintenance costs for active users
+### API Security
+- HTTPS/TLS encryption
+- CORS configuration
+- Request/response logging
+- API key management
+- Webhook signature verification
 
-## 🏡 Value Proposition
+## 🧪 Testing
 
-PropDocs transforms how homeowners manage their most valuable asset by:
-- Preventing costly emergency repairs through proactive maintenance
-- Maintaining comprehensive property documentation that enhances home value
-- Providing professional property reports that differentiate listings 
-- Reducing buyer inspection concerns with transparent asset history
-- Supporting premium pricing with documented property care
+### Test Coverage
+```bash
+# Run all tests
+npm test
 
+# Run tests with coverage
+npm run test:coverage
+
+# Run integration tests
+npm run test:integration
+
+# Run load tests
+npm run test:load
+```
+
+### Test Structure
+- **Unit Tests**: Service layer and utility functions
+- **Integration Tests**: API endpoints and database operations  
+- **Load Tests**: Performance under high traffic
+- **Security Tests**: Vulnerability scanning and penetration testing
+
+## 📊 Monitoring & Observability
+
+### Application Monitoring
+- Health check endpoints (`/health`, `/ready`)
+- Structured logging with correlation IDs
+- Performance metrics and alerting
+- Error tracking and reporting
+
+### Infrastructure Monitoring  
+- Resource utilization (CPU, memory, disk)
+- Database performance and query optimization
+- API response times and error rates
+- File storage usage and costs
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-*Ready to transform your property maintenance from reactive to proactive? Join thousands of homeowners already maximizing their property value with PropDocs.*
+*PropDocs API - Powering the future of property asset management* 🏠

@@ -29,25 +29,25 @@ This repository contains the backend API for PropDocs, a property asset manageme
 ## 🏗️ Technical Stack
 
 ### Backend Framework
-- **Runtime**: Node.js with TypeScript
-- **Framework**: Express.js or Fastify
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT with Passport.js
-- **File Storage**: AWS S3 or Google Cloud Storage
+- **Runtime**: Node.js 18+ with TypeScript
+- **Framework**: Fastify
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT tokens
+- **File Storage**: AWS S3
 
 ### API Architecture
-- **Design Pattern**: RESTful API with OpenAPI/Swagger documentation
-- **Data Validation**: Joi or Zod schemas
+- **Design Pattern**: RESTful API with Swagger documentation
+- **Data Validation**: Zod schemas
 - **Error Handling**: Centralized error middleware
-- **Logging**: Winston or Pino structured logging
-- **Testing**: Jest with Supertest for integration testing
+- **Logging**: Winston structured logging
+- **Testing**: Jest with integration testing
 
 ### Infrastructure
-- **Deployment**: Docker containers on AWS/GCP
+- **Deployment**: Docker containers
 - **Monitoring**: Application performance monitoring and health checks
-- **Caching**: Redis for session management and data caching
-- **Queue Processing**: Bull/BullMQ for background jobs
-- **Security**: Rate limiting, CORS, input sanitization
+- **Caching**: Redis for sessions and caching
+- **Security**: Rate limiting, CORS, input validation
+- **AI Integration**: OpenAI Vision API / Google Vision
 
 ## 📋 API Endpoints
 
@@ -85,9 +85,9 @@ This repository contains the backend API for PropDocs, a property asset manageme
 
 ### Prerequisites
 - Node.js 18+ 
-- MongoDB 5.0+
-- Redis (optional, for caching)
-- AWS/GCP account (for file storage)
+- PostgreSQL 12+
+- Redis 6.0+
+- AWS account (for S3 file storage)
 
 ### Installation
 ```bash
@@ -101,6 +101,10 @@ npm install
 # Set up environment variables
 cp .env.example .env
 
+# Setup database
+npx prisma migrate dev
+npx prisma db seed
+
 # Start development server
 npm run dev
 ```
@@ -109,20 +113,23 @@ npm run dev
 ```env
 NODE_ENV=development
 PORT=3000
-DATABASE_URL=mongodb://localhost:27017/propdocs
+DATABASE_URL=postgresql://username:password@localhost:5432/propdocs
 JWT_SECRET=your-jwt-secret
+JWT_REFRESH_SECRET=your-refresh-secret
+REDIS_URL=redis://localhost:6379
 AWS_ACCESS_KEY_ID=your-aws-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret
 AWS_S3_BUCKET=your-s3-bucket
+AWS_REGION=us-east-1
 ```
 
 ## 🏗️ Architecture Overview
 
 ```
-API Gateway (Express/Fastify)
-├── Authentication Middleware
+Fastify API Server
+├── Authentication Middleware (JWT)
 ├── Route Handlers
-│   ├── Auth Routes
+│   ├── Auth Routes (Apple/Google Sign In)
 │   ├── Property Routes  
 │   ├── Asset Routes
 │   ├── Maintenance Routes
@@ -134,13 +141,15 @@ API Gateway (Express/Fastify)
 │   ├── Maintenance Service
 │   └── AI Integration Service
 ├── Data Access Layer
-│   ├── MongoDB Models
+│   ├── Prisma ORM
+│   ├── PostgreSQL Database
 │   ├── Repository Pattern
 │   └── Query Optimization
 └── External Integrations
-    ├── File Storage (S3/GCS)
-    ├── AI/ML Services
-    └── Notification Services
+    ├── AWS S3 (File Storage)
+    ├── Redis (Caching/Sessions)
+    ├── OpenAI/Google Vision (AI)
+    └── Email/Push Notifications
 ```
 
 ## 🔒 Security Features
@@ -152,8 +161,8 @@ API Gateway (Express/Fastify)
 - OAuth integration (Google, Apple)
 
 ### Data Protection
-- Input validation and sanitization
-- SQL injection prevention
+- Input validation with Zod schemas
+- SQL injection prevention via Prisma ORM
 - Rate limiting and DDoS protection
 - Encrypted data at rest and in transit
 - GDPR and CCPA compliance
@@ -183,9 +192,9 @@ npm run test:load
 ```
 
 ### Test Structure
-- **Unit Tests**: Service layer and utility functions
-- **Integration Tests**: API endpoints and database operations  
-- **Load Tests**: Performance under high traffic
+- **Unit Tests**: Service layer and utility functions with Jest
+- **Integration Tests**: API endpoints with Prisma test database
+- **Load Tests**: Performance testing under high traffic
 - **Security Tests**: Vulnerability scanning and penetration testing
 
 ## 📊 Monitoring & Observability
@@ -198,9 +207,10 @@ npm run test:load
 
 ### Infrastructure Monitoring  
 - Resource utilization (CPU, memory, disk)
-- Database performance and query optimization
-- API response times and error rates
-- File storage usage and costs
+- PostgreSQL performance and query optimization
+- Fastify API response times and error rates
+- AWS S3 storage usage and costs
+- Redis cache hit rates and memory usage
 
 ## 🤝 Contributing
 

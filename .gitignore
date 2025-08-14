@@ -85,3 +85,5 @@ CLAUDE.md
 # Claude config
 .claude/
 
+
+/src/generated/prisma

@@ -1,0 +1,395 @@
+// PropDocs API - Prisma Schema
+// Property Asset Management System Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// User Management & Authentication
+// ================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Authentication providers
+  appleId  String? @unique @map("apple_id")
+  googleId String? @unique @map("google_id")
+
+  // Subscription tier
+  subscriptionTier SubscriptionTier @default(FREE) @map("subscription_tier")
+
+  // Soft delete
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relationships
+  properties       Property[]
+  sessions         UserSession[]
+  preferences      UserPreferences?
+  activityLogs     UserActivityLog[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  refreshToken String    @unique @map("refresh_token")
+  expiresAt    DateTime  @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  revokedAt    DateTime? @map("revoked_at")
+
+  // Device info
+  deviceType String? @map("device_type")
+  ipAddress  String? @map("ip_address")
+  userAgent  String? @map("user_agent")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+
+  // Notification preferences
+  emailNotifications     Boolean @default(true) @map("email_notifications")
+  pushNotifications      Boolean @default(true) @map("push_notifications")
+  maintenanceReminders   Boolean @default(true) @map("maintenance_reminders")
+  reportSharing          Boolean @default(false) @map("report_sharing")
+
+  // Display preferences
+  timezone               String  @default("UTC")
+  dateFormat             String  @default("MM/DD/YYYY") @map("date_format")
+  temperatureUnit        String  @default("F") @map("temperature_unit")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model UserActivityLog {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  action    String
+  resource  String?
+  metadata  Json?
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_activity_logs")
+}
+
+// ================================
+// Property Management
+// ================================
+
+model Property {
+  id        String   @id @default(cuid())
+  name      String
+  type      PropertyType
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Address information
+  address     String
+  city        String
+  state       String
+  zipCode     String  @map("zip_code")
+  country     String  @default("US")
+  latitude    Float?
+  longitude   Float?
+
+  // Property details
+  yearBuilt     Int?    @map("year_built")
+  squareFeet    Int?    @map("square_feet")
+  bedrooms      Int?
+  bathrooms     Float?
+  description   String?
+
+  // Ownership
+  ownerId String @map("owner_id")
+
+  // Soft delete
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relationships
+  owner  User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  assets Asset[]
+  photos PropertyPhoto[]
+
+  @@map("properties")
+}
+
+model PropertyPhoto {
+  id         String   @id @default(cuid())
+  propertyId String   @map("property_id")
+  url        String
+  thumbnail  String?
+  caption    String?
+  order      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_photos")
+}
+
+// ================================
+// Asset Management
+// ================================
+
+model Asset {
+  id         String   @id @default(cuid())
+  propertyId String   @map("property_id")
+  name       String
+  category   AssetCategory
+  type       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Asset details
+  brand            String?
+  model            String?
+  serialNumber     String?   @map("serial_number")
+  purchaseDate     DateTime? @map("purchase_date")
+  installationDate DateTime? @map("installation_date")
+  warrantyExpiry   DateTime? @map("warranty_expiry")
+  purchasePrice    Float?    @map("purchase_price")
+
+  // Condition tracking
+  condition      AssetCondition @default(GOOD)
+  conditionNotes String?        @map("condition_notes")
+  lastInspected  DateTime?      @map("last_inspected")
+
+  // Location within property
+  location String?
+  room     String?
+
+  // Specifications (JSON for flexibility)
+  specifications Json?
+
+  // Soft delete
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relationships
+  property            Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  photos              AssetPhoto[]
+  documents           AssetDocument[]
+  maintenanceSchedules MaintenanceSchedule[]
+  serviceRecords      ServiceRecord[]
+
+  @@map("assets")
+}
+
+model AssetPhoto {
+  id        String   @id @default(cuid())
+  assetId   String   @map("asset_id")
+  url       String
+  thumbnail String?
+  caption   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("asset_photos")
+}
+
+model AssetDocument {
+  id          String      @id @default(cuid())
+  assetId     String      @map("asset_id")
+  name        String
+  type        DocumentType
+  url         String
+  size        Int?
+  mimeType    String?     @map("mime_type")
+  description String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("asset_documents")
+}
+
+// ================================
+// Maintenance & Service Management
+// ================================
+
+model MaintenanceSchedule {
+  id       String @id @default(cuid())
+  assetId  String @map("asset_id")
+  title    String
+  description String?
+
+  // Schedule configuration
+  frequency     MaintenanceFrequency
+  interval      Int                  @default(1) // Every N units (1 month, 3 months, etc.)
+  startDate     DateTime             @map("start_date")
+  nextDue       DateTime             @map("next_due")
+
+  // Status
+  isActive      Boolean              @default(true) @map("is_active")
+  priority      MaintenancePriority  @default(MEDIUM)
+
+  // Cost estimation
+  estimatedCost Float?               @map("estimated_cost")
+  estimatedTime Int?                 @map("estimated_time") // in minutes
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  asset          Asset            @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  maintenanceTasks MaintenanceTask[]
+
+  @@map("maintenance_schedules")
+}
+
+model MaintenanceTask {
+  id         String   @id @default(cuid())
+  scheduleId String   @map("schedule_id")
+  title      String
+  description String?
+  dueDate    DateTime @map("due_date")
+  
+  // Status tracking
+  status       TaskStatus @default(PENDING)
+  completedAt  DateTime?  @map("completed_at")
+  completedBy  String?    @map("completed_by")
+  notes        String?
+
+  // Cost tracking
+  actualCost   Float?     @map("actual_cost")
+  actualTime   Int?       @map("actual_time") // in minutes
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  schedule       MaintenanceSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  serviceRecords ServiceRecord[]
+
+  @@map("maintenance_tasks")
+}
+
+model ServiceRecord {
+  id          String   @id @default(cuid())
+  assetId     String   @map("asset_id")
+  taskId      String?  @map("task_id") // Optional link to maintenance task
+  title       String
+  description String
+  serviceDate DateTime @map("service_date")
+
+  // Service provider info
+  providerName    String?  @map("provider_name")
+  providerContact String?  @map("provider_contact")
+  
+  // Cost information
+  cost            Float?
+  laborCost       Float?   @map("labor_cost")
+  partsCost       Float?   @map("parts_cost")
+  
+  // Service details
+  warrantyPeriod  Int?     @map("warranty_period") // in days
+  notes           String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  asset Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  task  MaintenanceTask? @relation(fields: [taskId], references: [id])
+
+  @@map("service_records")
+}
+
+// ================================
+// Enums
+// ================================
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+  PROFESSIONAL
+}
+
+enum PropertyType {
+  HOUSE
+  CONDO
+  APARTMENT
+  TOWNHOUSE
+  MOBILE_HOME
+  OTHER
+}
+
+enum AssetCategory {
+  HVAC
+  PLUMBING
+  ELECTRICAL
+  APPLIANCES
+  SECURITY
+  LANDSCAPING
+  STRUCTURAL
+  EXTERIOR
+  INTERIOR
+  MECHANICAL
+  OTHER
+}
+
+enum AssetCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  NEEDS_REPLACEMENT
+}
+
+enum DocumentType {
+  WARRANTY
+  MANUAL
+  INVOICE
+  RECEIPT
+  INSPECTION_REPORT
+  PHOTO
+  OTHER
+}
+
+enum MaintenanceFrequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+  BI_ANNUAL
+  CUSTOM
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}

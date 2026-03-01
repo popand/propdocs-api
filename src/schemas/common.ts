@@ -54,10 +54,6 @@ export const healthCheckResponseSchema = z.object({
     status: z.enum(['connected', 'disconnected', 'error']),
     latency: z.number().optional(),
   }),
-  redis: z.object({
-    status: z.enum(['connected', 'disconnected', 'error']),
-    latency: z.number().optional(),
-  }),
 });
 
 // Type exports

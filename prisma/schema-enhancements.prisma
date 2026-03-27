@@ -1,0 +1,196 @@
+// Enhanced Prisma Schema with Performance Optimizations and Additional Models
+// This file contains the enhancements to add to the main schema
+
+// Additional models for enhanced functionality
+
+model PropertyShare {
+  id        String   @id @default(cuid())
+  propertyId String  @map("property_id")
+  shareToken String  @unique @map("share_token")
+  level     PropertySharingLevel
+  expiresAt DateTime? @map("expires_at")
+  allowDownload Boolean @default(false) @map("allow_download")
+  passwordHash String? @map("password_hash")
+  viewCount Int @default(0) @map("view_count")
+  lastViewed DateTime? @map("last_viewed")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String   @map("created_by")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  creator  User     @relation(fields: [createdBy], references: [id])
+
+  @@map("property_shares")
+}
+
+model PropertyAccess {
+  id         String   @id @default(cuid())
+  propertyId String   @map("property_id")
+  userId     String   @map("user_id")
+  role       PropertyRole
+  grantedAt  DateTime @default(now()) @map("granted_at")
+  grantedBy  String   @map("granted_by")
+  revokedAt  DateTime? @map("revoked_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  granter  User     @relation("PropertyAccessGranter", fields: [grantedBy], references: [id])
+
+  @@unique([propertyId, userId])
+  @@map("property_access")
+}
+
+model AssetHierarchy {
+  id       String @id @default(cuid())
+  parentId String @map("parent_id")
+  childId  String @map("child_id")
+  systemName String? @map("system_name")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parent Asset @relation("AssetParent", fields: [parentId], references: [id], onDelete: Cascade)
+  child  Asset @relation("AssetChild", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, childId])
+  @@map("asset_hierarchy")
+}
+
+model MaintenanceTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  frequency   MaintenanceFrequency
+  interval    Int      @default(1)
+  priority    MaintenancePriority @default(MEDIUM)
+  estimatedCost Float? @map("estimated_cost")
+  estimatedTime Int?   @map("estimated_time")
+  category    AssetCategory
+  assetTypes  String[] @map("asset_types")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("maintenance_templates")
+}
+
+model ServiceProvider {
+  id          String   @id @default(cuid())
+  name        String
+  contact     String
+  email       String?
+  phone       String?
+  website     String?
+  address     String?
+  specialties String[]
+  rating      Float?
+  notes       String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  serviceRecords ServiceRecord[]
+
+  @@map("service_providers")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean  @default(false) @map("is_read")
+  readAt    DateTime? @map("read_at")
+  sentAt    DateTime @default(now()) @map("sent_at")
+  scheduledFor DateTime? @map("scheduled_for")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([sentAt])
+  @@map("notifications")
+}
+
+// Enhanced enums
+enum PropertySharingLevel {
+  PRIVATE
+  SHARED_LINK
+  PUBLIC_LISTING
+}
+
+enum PropertyRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum NotificationType {
+  MAINTENANCE_DUE
+  MAINTENANCE_OVERDUE
+  WARRANTY_EXPIRING
+  SYSTEM_UPDATE
+  SHARING_INVITE
+  PAYMENT_REMINDER
+}
+
+// Index enhancements for existing models (to be added to main schema)
+
+/*
+Indexes to add to existing models:
+
+User:
+@@index([email])
+@@index([subscriptionTier])
+@@index([createdAt])
+
+UserSession:
+@@index([userId])
+@@index([expiresAt])
+@@index([createdAt])
+
+UserActivityLog:
+@@index([userId, createdAt])
+@@index([action])
+
+Property:
+@@index([ownerId])
+@@index([type])
+@@index([city, state])
+@@index([createdAt])
+@@index([deletedAt])
+
+PropertyPhoto:
+@@index([propertyId, order])
+
+Asset:
+@@index([propertyId])
+@@index([category])
+@@index([condition])
+@@index([warrantyExpiry])
+@@index([lastInspected])
+@@index([createdAt])
+@@index([deletedAt])
+
+AssetPhoto:
+@@index([assetId, order])
+
+AssetDocument:
+@@index([assetId, type])
+
+MaintenanceSchedule:
+@@index([assetId])
+@@index([nextDue])
+@@index([isActive])
+@@index([priority])
+
+MaintenanceTask:
+@@index([scheduleId])
+@@index([status])
+@@index([dueDate])
+@@index([status, dueDate])
+
+ServiceRecord:
+@@index([assetId])
+@@index([serviceDate])
+@@index([providerId]) // when ServiceProvider is linked
+*/
